@@ -51,7 +51,6 @@ def evaluate_global_model(server, loader, config, model_name='test'):
             config.DEVICE,
             config
         )
-        # Debug: Print model norm
         norm = compute_model_norm(global_model[model_name_key])
         print(f"[Debug] {model_name_key} model norm after loading: {norm:.4f}")
     
@@ -88,11 +87,17 @@ def evaluate_global_model(server, loader, config, model_name='test'):
         }
     }
     
+    # Unified multiclass predictions and targets
+    multiclass_preds = []
+    multiclass_targets = []
+    multiclass_class_counts = {}
+    
     with torch.no_grad():
         for inputs, targets in loader:
             inputs, targets = inputs.to(config.DEVICE), targets.to(config.DEVICE)
             binary_targets, multi_targets = targets[:, 0], targets[:, 1]
             
+            # Binary model predictions
             binary_out = global_model['binary'](inputs).to(config.DEVICE)
             _, binary_preds = torch.max(binary_out, 1)
             metrics['three_models']['binary_correct'] += (binary_preds == binary_targets).sum().item()
@@ -102,6 +107,7 @@ def evaluate_global_model(server, loader, config, model_name='test'):
             for target in binary_targets.cpu().numpy():
                 metrics['three_models']['binary_class_counts'][int(target)] = metrics['three_models']['binary_class_counts'].get(int(target), 0) + 1
             
+            # Fall model predictions
             fall_mask = binary_targets == 0
             if fall_mask.any():
                 fall_out = global_model['fall'](inputs[fall_mask]).to(config.DEVICE)
@@ -112,7 +118,14 @@ def evaluate_global_model(server, loader, config, model_name='test'):
                 metrics['three_models']['fall_targets'].extend(multi_targets[fall_mask].tolist())
                 for target in multi_targets[fall_mask].cpu().numpy():
                     metrics['three_models']['fall_class_counts'][int(target)] = metrics['three_models']['fall_class_counts'].get(int(target), 0) + 1
+                
+                # Map fall predictions to unified scenario space
+                for pred, target in zip(fall_preds.tolist(), multi_targets[fall_mask].tolist()):
+                    multiclass_preds.append(pred)  # Fall model predicts indices of FALL_SCENARIOS
+                    multiclass_targets.append(target)
+                    multiclass_class_counts[target] = multiclass_class_counts.get(target, 0) + 1
             
+            # Non-fall model predictions
             non_fall_mask = binary_targets == 1
             if non_fall_mask.any():
                 non_fall_out = global_model['non_fall'](inputs[non_fall_mask]).to(config.DEVICE)
@@ -123,10 +136,16 @@ def evaluate_global_model(server, loader, config, model_name='test'):
                 metrics['three_models']['non_fall_targets'].extend(multi_targets[non_fall_mask].tolist())
                 for target in multi_targets[non_fall_mask].cpu().numpy():
                     metrics['three_models']['non_fall_class_counts'][int(target)] = metrics['three_models']['non_fall_class_counts'].get(int(target), 0) + 1
+                
+                # Map non-fall predictions to unified scenario space
+                for pred, target in zip(non_fall_preds.tolist(), multi_targets[non_fall_mask].tolist()):
+                    multiclass_preds.append(pred)  # Non-fall model predicts indices of NON_FALL_SCENARIOS
+                    multiclass_targets.append(target)
+                    multiclass_class_counts[target] = multiclass_class_counts.get(target, 0) + 1
             
             metrics['three_models']['total'] += len(targets)
     
-    # Compute three-model metrics
+    # Compute three-model metrics (unchanged)
     if metrics['three_models']['binary_class_counts']:
         binary_weights = np.array([metrics['three_models']['binary_class_counts'].get(i, 0) for i in range(2)])
         binary_weights = binary_weights / binary_weights.sum() if binary_weights.sum() > 0 else np.ones(2) / 2
@@ -203,14 +222,44 @@ def evaluate_global_model(server, loader, config, model_name='test'):
     metrics['two_models']['binary_precision'] = metrics['three_models']['binary_precision']
     metrics['two_models']['binary_recall'] = metrics['three_models']['binary_recall']
     metrics['two_models']['binary_f1'] = metrics['three_models']['binary_f1']
-    metrics['two_models']['multiclass_acc'] = (metrics['three_models']['fall_acc'] + metrics['three_models']['non_fall_acc']) / 2
-    metrics['two_models']['multiclass_weighted_acc'] = (metrics['three_models']['fall_weighted_acc'] + metrics['three_models']['non_fall_weighted_acc']) / 2
-    metrics['two_models']['multiclass_precision'] = (metrics['three_models']['fall_precision'] + metrics['three_models']['non_fall_precision']) / 2
-    metrics['two_models']['multiclass_recall'] = (metrics['three_models']['fall_recall'] + metrics['three_models']['non_fall_recall']) / 2
-    metrics['two_models']['multiclass_f1'] = (metrics['three_models']['fall_f1'] + metrics['three_models']['non_fall_f1']) / 2
+    
+    # Compute unified multiclass metrics
+    total_multiclass_samples = metrics['three_models']['fall_total'] + metrics['three_models']['non_fall_total']
+    if total_multiclass_samples > 0:
+        multiclass_correct = metrics['three_models']['fall_correct'] + metrics['three_models']['non_fall_correct']
+        metrics['two_models']['multiclass_acc'] = multiclass_correct / total_multiclass_samples
+        
+        if multiclass_class_counts:
+            num_classes = len(config.FALL_SCENARIOS) + len(config.NON_FALL_SCENARIOS)
+            multiclass_weights = np.array([multiclass_class_counts.get(i, 0) for i in range(num_classes)])
+            multiclass_weights = multiclass_weights / multiclass_weights.sum() if multiclass_weights.sum() > 0 else np.ones(num_classes) / num_classes
+            multiclass_correct_weighted = 0
+            for i in range(num_classes):
+                correct_count = sum(1 for pred, target in zip(multiclass_preds, multiclass_targets) if pred == target == i)
+                multiclass_correct_weighted += correct_count * multiclass_weights[i]
+            metrics['two_models']['multiclass_weighted_acc'] = multiclass_correct_weighted / max(1, total_multiclass_samples)
+        else:
+            metrics['two_models']['multiclass_weighted_acc'] = 0.0
+        
+        if multiclass_targets:
+            multiclass_prf = precision_recall_fscore_support(
+                multiclass_targets, multiclass_preds, average='weighted', zero_division=0)
+            metrics['two_models']['multiclass_precision'] = multiclass_prf[0]
+            metrics['two_models']['multiclass_recall'] = multiclass_prf[1]
+            metrics['two_models']['multiclass_f1'] = multiclass_prf[2]
+        else:
+            metrics['two_models']['multiclass_precision'] = 0.0
+            metrics['two_models']['multiclass_recall'] = 0.0
+            metrics['two_models']['multiclass_f1'] = 0.0
+    else:
+        metrics['two_models']['multiclass_acc'] = 0.0
+        metrics['two_models']['multiclass_weighted_acc'] = 0.0
+        metrics['two_models']['multiclass_precision'] = 0.0
+        metrics['two_models']['multiclass_recall'] = 0.0
+        metrics['two_models']['multiclass_f1'] = 0.0
     
     return convert_keys_to_json_serializable(metrics)
-
+    
 if __name__ == "__main__":
     overlap_values = [0.0]
     num_clients_values = [3]
