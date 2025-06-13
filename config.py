@@ -17,11 +17,11 @@ class Config:
         self.BATCH_SIZE = 32
         # self.TEST_SIZE = 0.2 
         # self.VAL_SIZE = 0.2
-        self.COMMUNICATION_ROUNDS = 5
-        self.CLIENT_EPOCHS = 3
+        self.COMMUNICATION_ROUNDS = 25
+        self.CLIENT_EPOCHS = 30
         self.LEARNING_RATE = 0.001
-        self.HIDDEN_SIZE_BINARY = 128  
-        self.HIDDEN_SIZE_MULTICLASS = 128 
+        self.HIDDEN_SIZE_BINARY = 256  
+        self.HIDDEN_SIZE_MULTICLASS = 256 
         self.NUM_LAYERS = 2
         self.DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.FALL_SCENARIOS = [5, 4, 10, 0]
