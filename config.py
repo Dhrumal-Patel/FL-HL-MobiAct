@@ -20,7 +20,7 @@ class Config:
         self.COMMUNICATION_ROUNDS = 25
         self.CLIENT_EPOCHS = 10
         self.LEARNING_RATE = 0.001
-        self.HIDDEN_SIZE_BINARY = 256  
+        self.HIDDEN_SIZE_BINARY = 128  
         self.HIDDEN_SIZE_MULTICLASS = 256 
         self.NUM_LAYERS = 2
         self.DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
