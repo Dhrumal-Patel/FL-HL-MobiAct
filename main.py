@@ -262,7 +262,7 @@ def evaluate_global_model(server, loader, config, model_name='test'):
     
 if __name__ == "__main__":
     overlap_values = [0.0]
-    num_clients_values = [44]
+    num_clients_values = [22]
     verify_dataset(Config(overlap=0.0))
     
     for num_clients in num_clients_values:
@@ -308,7 +308,7 @@ if __name__ == "__main__":
                         norm_before = compute_model_norm(global_model[model_name_key])
                         print(f"[Debug] Round {round_num + 1}, {model_name_key} norm before training: {norm_before:.4f}")
                     
-                    client_batches = [client_datasets[i:i+44] for i in range(0, len(client_datasets), 44)]
+                    client_batches = [client_datasets[i:i+22] for i in range(0, len(client_datasets), 22)]
                     
                     for batch_idx, batch_datasets in enumerate(client_batches):
                         print(f"\nProcessing client batch {batch_idx + 1}/{len(client_batches)}")
