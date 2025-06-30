@@ -19,7 +19,7 @@ class Config:
         # self.VAL_SIZE = 0.2
         self.COMMUNICATION_ROUNDS = 25
         self.CLIENT_EPOCHS = 10
-        self.LEARNING_RATE = 0.001
+        self.LEARNING_RATE = 0.01
         self.HIDDEN_SIZE_BINARY = 128  
         self.HIDDEN_SIZE_MULTICLASS = 256 
         self.NUM_LAYERS = 2
