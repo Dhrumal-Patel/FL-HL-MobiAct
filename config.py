@@ -27,7 +27,7 @@ class Config:
         self.FALL_SCENARIOS = [5, 4, 10, 0]
         self.NON_FALL_SCENARIOS = [i for i in range(16) if i not in [5, 4, 10, 0]]
         self.FEDPROX_MU = 0.1
-        self.FEATURE_COLUMNS = ['acc_x','acc_y','acc_z','gyro_x','gyro_y','gyro_z','azimuth','pitch','roll']
+        self.FEATURE_COLUMNS = ['w','x','y','z','droll','dpitch','dyaw','ax','ay','az']
         self.MAX_PARAM_SIZE = 100000
         self.SEQUENCE_LENGTH = 50
         self.SAMPLING_STRATEGY = 0.5
