@@ -25,7 +25,7 @@ class Config:
         self.NUM_LAYERS = 2
         self.DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.FALL_SCENARIOS = [5, 4, 10, 0]
-        self.NON_FALL_SCENARIOS = [i for i in range(16) if i not in [5, 4, 10, 0]]
+        self.NON_FALL_SCENARIOS = [i for i in range(19) if i not in [5, 6, 7, 8, 10, 9]]
         self.FEDPROX_MU = 0.1
         self.FEATURE_COLUMNS = ['w','x','y','z','droll','dpitch','dyaw','ax','ay','az']
         self.MAX_PARAM_SIZE = 100000
