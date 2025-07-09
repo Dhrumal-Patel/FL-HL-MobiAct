@@ -15,9 +15,9 @@ class FederatedClient:
         self.config = config
         self.device = config.DEVICE
         self.models = {
-            'binary': LSTMModel(9, config.HIDDEN_SIZE_BINARY, config.NUM_LAYERS, 2).to(self.device),
-            'fall': LSTMModel(9, config.HIDDEN_SIZE_MULTICLASS, config.NUM_LAYERS, len(config.FALL_SCENARIOS)).to(self.device),
-            'non_fall': LSTMModel(9, config.HIDDEN_SIZE_MULTICLASS, config.NUM_LAYERS, len(config.NON_FALL_SCENARIOS)).to(self.device)
+            'binary': LSTMModel(10, config.HIDDEN_SIZE_BINARY, config.NUM_LAYERS, 2).to(self.device),
+            'fall': LSTMModel(10, config.HIDDEN_SIZE_MULTICLASS, config.NUM_LAYERS, len(config.FALL_SCENARIOS)).to(self.device),
+            'non_fall': LSTMModel(10, config.HIDDEN_SIZE_MULTICLASS, config.NUM_LAYERS, len(config.NON_FALL_SCENARIOS)).to(self.device)
         }
         # print(f"[FederatedClient] Initialized client {client_id} with {len(train_dataset)} training samples")
 
