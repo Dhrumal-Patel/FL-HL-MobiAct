@@ -11,7 +11,7 @@ def save_model_to_csv(model, file_path, config):
     
     # Prepare metadata
     metadata = {
-        'input_size': 9,  # Fixed based on dataset (acc_x, acc_y, etc.)
+        'input_size': 10,  # Fixed based on dataset (acc_x, acc_y, etc.)
         'hidden_size': config.HIDDEN_SIZE_BINARY if 'binary' in file_path else config.HIDDEN_SIZE_MULTICLASS,
         'num_layers': config.NUM_LAYERS,
         'num_classes': (2 if 'binary' in file_path else
@@ -56,7 +56,7 @@ def load_model_from_csv(model, file_path, device, config):
             
             # Expected metadata based on model type
             expected_metadata = {
-                'input_size': 9,
+                'input_size': 10,
                 'hidden_size': config.HIDDEN_SIZE_BINARY if 'binary' in file_path else config.HIDDEN_SIZE_MULTICLASS,
                 'num_layers': config.NUM_LAYERS,
                 'num_classes': (2 if 'binary' in file_path else
@@ -90,19 +90,19 @@ class FederatedServer:
         self.config = config
         self.models = {
             'binary': LSTMModel(
-                input_size=9,
+                input_size=10,
                 hidden_size=config.HIDDEN_SIZE_BINARY,
                 num_layers=config.NUM_LAYERS,
                 num_classes=2
             ).to(config.DEVICE),
             'fall': LSTMModel(
-                input_size=9,
+                input_size=10,
                 hidden_size=config.HIDDEN_SIZE_MULTICLASS,
                 num_layers=config.NUM_LAYERS,
                 num_classes=len(config.FALL_SCENARIOS)
             ).to(config.DEVICE),
             'non_fall': LSTMModel(
-                input_size=9,
+                input_size=10,
                 hidden_size=config.HIDDEN_SIZE_MULTICLASS,
                 num_layers=config.NUM_LAYERS,
                 num_classes=len(config.NON_FALL_SCENARIOS)
@@ -155,7 +155,7 @@ class FederatedServer:
                     
                     # Load client parameters into a temporary model
                     temp_model = LSTMModel(
-                        input_size=9,
+                        input_size=10,
                         hidden_size=self.config.HIDDEN_SIZE_BINARY if model_name == 'binary' else self.config.HIDDEN_SIZE_MULTICLASS,
                         num_layers=self.config.NUM_LAYERS,
                         num_classes=2 if model_name == 'binary' else
