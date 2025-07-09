@@ -39,9 +39,9 @@ def compute_model_norm(model):
 
 def evaluate_global_model(server, loader, config, model_name='test'):
     global_model = {
-        'binary': LSTMModel(9, config.HIDDEN_SIZE_BINARY, config.NUM_LAYERS, 2).to(config.DEVICE),
-        'fall': LSTMModel(9, config.HIDDEN_SIZE_MULTICLASS, config.NUM_LAYERS, len(config.FALL_SCENARIOS)).to(config.DEVICE),
-        'non_fall': LSTMModel(9, config.HIDDEN_SIZE_MULTICLASS, config.NUM_LAYERS, len(config.NON_FALL_SCENARIOS)).to(config.DEVICE)
+        'binary': LSTMModel(10, config.HIDDEN_SIZE_BINARY, config.NUM_LAYERS, 2).to(config.DEVICE),
+        'fall': LSTMModel(10, config.HIDDEN_SIZE_MULTICLASS, config.NUM_LAYERS, len(config.FALL_SCENARIOS)).to(config.DEVICE),
+        'non_fall': LSTMModel(10, config.HIDDEN_SIZE_MULTICLASS, config.NUM_LAYERS, len(config.NON_FALL_SCENARIOS)).to(config.DEVICE)
     }
     
     for model_name_key in global_model:
@@ -290,9 +290,9 @@ if __name__ == "__main__":
                 
                 # Initialize global model for norm checking
                 global_model = {
-                    'binary': LSTMModel(9, config.HIDDEN_SIZE_BINARY, config.NUM_LAYERS, 2).to(config.DEVICE),
-                    'fall': LSTMModel(9, config.HIDDEN_SIZE_MULTICLASS, config.NUM_LAYERS, len(config.FALL_SCENARIOS)).to(config.DEVICE),
-                    'non_fall': LSTMModel(9, config.HIDDEN_SIZE_MULTICLASS, config.NUM_LAYERS, len(config.NON_FALL_SCENARIOS)).to(config.DEVICE)
+                    'binary': LSTMModel(10, config.HIDDEN_SIZE_BINARY, config.NUM_LAYERS, 2).to(config.DEVICE),
+                    'fall': LSTMModel(10, config.HIDDEN_SIZE_MULTICLASS, config.NUM_LAYERS, len(config.FALL_SCENARIOS)).to(config.DEVICE),
+                    'non_fall': LSTMModel(10, config.HIDDEN_SIZE_MULTICLASS, config.NUM_LAYERS, len(config.NON_FALL_SCENARIOS)).to(config.DEVICE)
                 }
                 
                 for round_num in range(config.COMMUNICATION_ROUNDS):
