@@ -17,8 +17,8 @@ class Config:
         self.BATCH_SIZE = 32
         # self.TEST_SIZE = 0.2 
         # self.VAL_SIZE = 0.2
-        self.COMMUNICATION_ROUNDS = 25
-        self.CLIENT_EPOCHS = 10
+        self.COMMUNICATION_ROUNDS = 200
+        self.CLIENT_EPOCHS = 30
         self.LEARNING_RATE = 0.001
         self.HIDDEN_SIZE_BINARY = 128  
         self.HIDDEN_SIZE_MULTICLASS = 256 
